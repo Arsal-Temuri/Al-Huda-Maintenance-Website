@@ -1,0 +1,168 @@
+{
+  "admins": [
+    {
+      "id": 1,
+      "username": "female_admin",
+      "password": "admin123",
+      "role": "female_admin",
+      "name": "Female Admin"
+    },
+    {
+      "id": 2,
+      "username": "male_admin",
+      "password": "admin123",
+      "role": "male_admin",
+      "name": "Male Admin"
+    }
+  ],
+  "workers": [
+    {
+      "id": 1,
+      "name": "Ahmed",
+      "role": "Plumber",
+      "phone": "+92-300-1234567"
+    },
+    {
+      "id": 2,
+      "name": "Ali",
+      "role": "Electrician",
+      "phone": "+92-300-7654321"
+    },
+    {
+      "id": 3,
+      "name": "Bilal",
+      "role": "Maintenance",
+      "phone": "+92-300-1112233"
+    },
+    {
+      "id": 4,
+      "name": "Hassan",
+      "role": "Cleaner",
+      "phone": "+92-300-9998877"
+    }
+  ],
+  "requests": [
+    {
+      "id": "REQ-2603-3157",
+      "department": "Boys Hostel",
+      "requestType": "Electrical",
+      "description": "Short circuit in the room",
+      "priority": "Low",
+      "status": "Completed",
+      "assignedWorker": {
+        "id": 1,
+        "name": "Ahmed",
+        "role": "Plumber",
+        "phone": "+92-300-1234567"
+      },
+      "photo": null,
+      "submittedAt": "2026-03-07T04:51:11.718Z",
+      "verifiedAt": "2026-03-07T04:52:12.584Z",
+      "assignedAt": "2026-03-07T04:53:25.437Z",
+      "completedAt": "2026-03-07T04:54:33.321Z",
+      "verifiedBy": "Female Admin",
+      "assignedBy": "Male Admin",
+      "completedBy": "Male Admin"
+    },
+    {
+      "id": "REQ-2603-9061",
+      "department": "Library",
+      "requestType": "Repair",
+      "description": "Book shelf is broken",
+      "priority": "Medium",
+      "status": "Completed",
+      "assignedWorker": {
+        "id": 3,
+        "name": "Bilal",
+        "role": "Maintenance",
+        "phone": "+92-300-1112233"
+      },
+      "photo": "/uploads/1772861424487-625622863.png",
+      "submittedAt": "2026-03-07T05:30:24.499Z",
+      "verifiedAt": "2026-03-07T05:42:23.365Z",
+      "assignedAt": "2026-03-07T05:51:02.083Z",
+      "completedAt": "2026-03-07T05:52:15.252Z",
+      "verifiedBy": "Female Admin",
+      "assignedBy": "Male Admin",
+      "completedBy": "Male Admin"
+    },
+    {
+      "id": "REQ-2603-8108",
+      "department": "abc ",
+      "requestType": "Plumbing",
+      "description": "jkdkjkjdsf",
+      "priority": "Medium",
+      "status": "Pending",
+      "assignedWorker": null,
+      "photo": null,
+      "submittedAt": "2026-03-07T05:32:10.720Z",
+      "verifiedAt": null,
+      "assignedAt": null,
+      "completedAt": null,
+      "verifiedBy": null,
+      "assignedBy": null,
+      "completedBy": null
+    },
+    {
+      "id": "REQ-2603-1258",
+      "department": "Boys Hostel",
+      "requestType": "Repair",
+      "description": "vbbbbv",
+      "priority": "High",
+      "status": "Pending",
+      "assignedWorker": null,
+      "photo": null,
+      "submittedAt": "2026-03-07T05:37:38.160Z",
+      "verifiedAt": null,
+      "assignedAt": null,
+      "completedAt": null,
+      "verifiedBy": null,
+      "assignedBy": null,
+      "completedBy": null
+    },
+    {
+      "id": "REQ-2603-2192",
+      "department": "abc",
+      "requestType": "Repair",
+      "description": "abc",
+      "priority": "Urgent",
+      "status": "Completed",
+      "assignedWorker": {
+        "id": 4,
+        "name": "Hassan",
+        "role": "Cleaner",
+        "phone": "+92-300-9998877"
+      },
+      "photo": null,
+      "submittedAt": "2026-03-07T06:26:25.842Z",
+      "verifiedAt": "2026-03-07T06:27:24.338Z",
+      "assignedAt": "2026-03-07T06:28:05.004Z",
+      "completedAt": "2026-03-07T06:28:25.227Z",
+      "verifiedBy": "Female Admin",
+      "assignedBy": "Male Admin",
+      "completedBy": "Male Admin"
+    },
+    {
+      "id": "REQ-2603-4271",
+      "department": "Boys Hostel",
+      "requestType": "Plumbing",
+      "description": "the shower is broken",
+      "priority": "Medium",
+      "status": "Completed",
+      "assignedWorker": {
+        "id": 1,
+        "name": "Ahmed",
+        "role": "Plumber",
+        "phone": "+92-300-1234567"
+      },
+      "photo": null,
+      "submittedAt": "2026-03-07T07:24:06.144Z",
+      "verifiedAt": "2026-03-07T07:26:21.864Z",
+      "assignedAt": "2026-03-07T07:27:37.896Z",
+      "completedAt": "2026-03-07T07:28:39.374Z",
+      "verifiedBy": "Female Admin",
+      "assignedBy": "Male Admin",
+      "completedBy": "Male Admin"
+    }
+  ]
+}

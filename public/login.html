@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Al Huda</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card" style="max-width: 500px; margin: 100px auto;">
+      <div class="header">
+        <h1>Admin Login</h1>
+        <p>Al Huda Maintenance Management System</p>
+      </div>
+
+      <div id="alertBox" class="alert"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required 
+                 placeholder="Enter your username" autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required 
+                 placeholder="Enter your password" autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+          Login
+        </button>
+      </form>
+
+      <div style="margin-top: 30px; padding: 20px; background: rgba(153, 41, 234, 0.1); border-radius: 8px; border: 1px solid rgba(153, 41, 234, 0.3); backdrop-filter: blur(10px);">
+        <p style="color: rgba(255, 255, 255, 0.9); font-weight: 600; margin-bottom: 10px;">Default Credentials (Demo):</p>
+        <p style="color: rgba(255, 255, 255, 0.8); font-size: 0.9em; margin: 5px 0;">
+          <strong>Female Admin:</strong> female_admin / admin123
+        </p>
+        <p style="color: rgba(255, 255, 255, 0.8); font-size: 0.9em; margin: 5px 0;">
+          <strong>Male Admin:</strong> male_admin / admin123
+        </p>
+      </div>
+
+      <div style="margin-top: 20px; text-align: center; color: rgba(255, 255, 255, 0.7);">
+        <p><a href="/" style="color: #9929EA; font-weight: 600; text-decoration: none; text-shadow: 0 0 10px rgba(153, 41, 234, 0.5);">← Back to Request Form</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/login.js"></script>
+</body>
+</html>
+

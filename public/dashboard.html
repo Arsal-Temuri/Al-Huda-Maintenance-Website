@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Al Huda</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="navbar">
+      <h2>Admin Dashboard</h2>
+      <div class="user-info">
+        <span class="user-name" id="userName">Loading...</span>
+        <button class="btn btn-secondary btn-sm" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="stats-grid" id="stats">
+      <div class="stat-card">
+        <h3>Total Requests</h3>
+        <div class="stat-number" id="totalRequests">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Pending</h3>
+        <div class="stat-number" id="pendingCount">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>In Progress</h3>
+        <div class="stat-number" id="inProgressCount">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Completed</h3>
+        <div class="stat-number" id="completedCount">0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Maintenance Requests</h2>
+        <div>
+          <button class="btn btn-success btn-sm" onclick="exportToExcel()">
+            Export to Excel
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="window.location.href='/history.html'">
+            View History
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="loadRequests()">
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-buttons" id="filterTabs">
+        <button class="btn btn-warning active" data-filter="all" onclick="filterRequests('all')">All</button>
+        <button class="btn btn-warning" data-filter="Pending" onclick="filterRequests('Pending')">Pending</button>
+        <button class="btn btn-warning" data-filter="Verified" onclick="filterRequests('Verified')">Verified</button>
+        <button class="btn btn-warning" data-filter="Assigned" onclick="filterRequests('Assigned')">Assigned</button>
+      </div>
+
+      <div id="alertBox" class="alert"></div>
+
+      <div class="table-container">
+        <table id="requestsTable">
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>Department</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Worker</th>
+              <th>Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="requestsTableBody">
+            <tr>
+              <td colspan="9" class="loading">Loading requests...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assign Worker Modal -->
+  <div id="assignModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Assign Worker</h2>
+      </div>
+      <form id="assignForm">
+        <input type="hidden" id="assignRequestId">
+        <div class="form-group">
+          <label>Request Details:</label>
+          <div id="assignRequestDetails" style="padding: 15px; background: rgba(153, 41, 234, 0.1); border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(153, 41, 234, 0.3); backdrop-filter: blur(10px); color: rgba(255, 255, 255, 0.9);"></div>
+        </div>
+        <div class="form-group">
+          <label for="workerId">Select Worker *</label>
+          <select id="workerId" required>
+            <option value="">-- Select Worker --</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeAssignModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Assign Worker</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Verify Request Modal -->
+  <div id="verifyModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Verify Request & Set Priority</h2>
+      </div>
+      <form id="verifyForm">
+        <input type="hidden" id="verifyRequestId">
+        <div class="form-group">
+          <label>Request Details:</label>
+          <div id="verifyRequestDetails" style="padding: 15px; background: rgba(153, 41, 234, 0.1); border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(153, 41, 234, 0.3); backdrop-filter: blur(10px); color: rgba(255, 255, 255, 0.9);"></div>
+        </div>
+        <div class="form-group">
+          <label for="verifyPriority">Set Priority *</label>
+          <select id="verifyPriority" required>
+            <option value="">-- Select Priority --</option>
+            <option value="Low">Low - Can wait</option>
+            <option value="Medium">Medium - Soon</option>
+            <option value="High">High - Important</option>
+            <option value="Urgent">Urgent - Immediate attention</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeVerifyModal()">Cancel</button>
+          <button type="submit" class="btn btn-success">Verify Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- WhatsApp Message Modal -->
+  <div id="whatsappModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Worker Assigned Successfully</h2>
+      </div>
+      <div style="padding: 20px; background: rgba(153, 41, 234, 0.1); border-radius: 8px; border: 1px solid rgba(153, 41, 234, 0.3); backdrop-filter: blur(10px);">
+        <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 15px; font-weight: 600;">Send this message to the worker via WhatsApp:</p>
+        <div id="whatsappMessage" style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 8px; border-left: 4px solid #9929EA; font-family: monospace; font-size: 0.9em; white-space: pre-wrap; color: rgba(255, 255, 255, 0.9);"></div>
+        <p style="color: rgba(255, 255, 255, 0.7); margin-top: 15px; font-size: 0.9em;">
+          <strong>Worker Phone:</strong> <span id="workerPhone"></span>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeWhatsAppModal()">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+node_modules/
+uploads/*
+!uploads/.gitkeep
+*.log
+.DS_Store
+.env
+.vercel
+package-lock.json

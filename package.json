@@ -1,0 +1,23 @@
+{
+  "name": "al-huda-maintenance-system",
+  "version": "1.0.0",
+  "description": "Digital maintenance request management system prototype",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "maintenance",
+    "request-management"
+  ],
+  "author": "Al Huda International Foundation",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "multer": "^1.4.5-lts.1",
+    "xlsx": "^0.18.5"
+  }
+}

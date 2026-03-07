@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task History - Al Huda</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="navbar">
+      <h2>Task History</h2>
+      <div class="user-info">
+        <span class="user-name" id="userName">Loading...</span>
+        <button class="btn btn-secondary btn-sm" onclick="window.location.href='/dashboard.html'">
+          ← Back to Dashboard
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="stats-grid" id="stats">
+      <div class="stat-card">
+        <h3>Total Completed</h3>
+        <div class="stat-number" id="completedCount">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>This Month</h3>
+        <div class="stat-number" id="monthCount">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>This Week</h3>
+        <div class="stat-number" id="weekCount">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Today</h3>
+        <div class="stat-number" id="todayCount">0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Completed Tasks</h2>
+        <div>
+          <button class="btn btn-success btn-sm" onclick="exportToExcel()">
+            Export to Excel
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="loadHistory()">
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table id="historyTable">
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>Department</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Priority</th>
+              <th>Assigned Worker</th>
+              <th>Submitted</th>
+              <th>Completed</th>
+              <th>Duration</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <tr>
+              <td colspan="10" class="loading">Loading completed tasks...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Details Modal -->
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Request Details</h3>
+        <button class="close-modal" onclick="closeDetailsModal()">&times;</button>
+      </div>
+      <div id="requestDetails" class="modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeDetailsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/history.js"></script>
+</body>
+</html>
