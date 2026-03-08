@@ -407,29 +407,27 @@ app.get('/api/export/requests', isAuthenticated, async (req, res) => {
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Start server
-async function startServer() {
-  try {
-    // Connect to MongoDB first
-    await connectToDatabase();
-    
-    app.listen(PORT, () => {
-      console.log('='.repeat(60));
-      console.log('  Al Huda Maintenance System - Server Started');
-      console.log('='.repeat(60));
-      console.log(`  Server running at: http://localhost:${PORT}`);
-      console.log(`  Request Form: http://localhost:${PORT}`);
-      console.log(`  Admin Login: http://localhost:${PORT}/login.html`);
-      console.log('='.repeat(60));
-      console.log('  Default Admin Credentials:');
-      console.log('  Female Admin: female_admin / admin123');
-      console.log('  Male Admin: male_admin / admin123');
-      console.log('='.repeat(60));
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
-}
+// Connect to MongoDB on startup
+connectToDatabase().catch(err => {
+  console.error('MongoDB connection failed:', err);
+});
 
-startServer();
+// Export for Vercel (serverless)
+module.exports = app;
+
+// Start server for local development
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log('='.repeat(60));
+    console.log('  Al Huda Maintenance System - Server Started');
+    console.log('='.repeat(60));
+    console.log(`  Server running at: http://localhost:${PORT}`);
+    console.log(`  Request Form: http://localhost:${PORT}`);
+    console.log(`  Admin Login: http://localhost:${PORT}/login.html`);
+    console.log('='.repeat(60));
+    console.log('  Default Admin Credentials:');
+    console.log('  Female Admin: female_admin / admin123');
+    console.log('  Male Admin: male_admin / admin123');
+    console.log('='.repeat(60));
+  });
+}
