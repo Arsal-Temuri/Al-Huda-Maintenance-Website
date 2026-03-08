@@ -65,6 +65,8 @@ This is a **minimal working prototype** of a digital request management system d
 - **Express.js** - Web framework
 - **express-session** - Session management
 - **multer** - File upload handling
+- **MongoDB** - Cloud database (MongoDB Atlas)
+- **dotenv** - Environment variable management
 
 ### Frontend
 - **HTML5** - Structure
@@ -72,8 +74,9 @@ This is a **minimal working prototype** of a digital request management system d
 - **JavaScript (ES6+)** - Client-side logic
 
 ### Database
-- **JSON file** - Simple file-based database (database.json)
-- Perfect for prototype and demo purposes
+- **MongoDB Atlas** - Cloud-hosted NoSQL database
+- Scalable and production-ready
+- Three collections: admins, workers, requests
 
 ---
 
@@ -106,24 +109,40 @@ al-huda-maintenance-system/
 ### Prerequisites
 - **Node.js** (v14 or higher)
 - **npm** (comes with Node.js)
+- **MongoDB Atlas account** (free tier) - [Sign up here](https://www.mongodb.com/cloud/atlas)
 
-### Step 1: Install Dependencies
-Open terminal/command prompt in the project directory and run:
+### Step 1: Clone Repository
+```bash
+git clone https://github.com/Arsal-Temuri/Al-Huda-Maintenance-Website.git
+cd Al-Huda-Maintenance-Website
+```
 
-```powershell
+### Step 2: Install Dependencies
+```bash
 npm install
 ```
 
-This will install:
-- express
-- body-parser
-- express-session
-- multer
+### Step 3: Configure MongoDB
+1. Create a MongoDB Atlas account and cluster (see [DEPLOYMENT.md](DEPLOYMENT.md) for detailed steps)
+2. Get your MongoDB connection string
+3. Copy `.env.example` to `.env`:
+   ```bash
+   copy .env.example .env
+   ```
+4. Edit `.env` and add your MongoDB connection string:
+   ```
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/
+   PORT=3000
+   ```
 
-### Step 2: Start the Server
-Run the following command:
+### Step 4: Seed Database
+Populate MongoDB with initial data:
+```bash
+npm run seed
+```
 
-```powershell
+### Step 5: Start the Server
+```bash
 npm start
 ```
 
@@ -296,48 +315,54 @@ When a worker is assigned:
 
 ## 💾 Database Structure
 
-The `database.json` file contains:
+The MongoDB database (`alhuda-maintenance`) contains three collections:
+
+### Collections:
+- **admins** - Admin user accounts
+- **workers** - Maintenance workers
+- **requests** - Maintenance requests
+
+### Sample Document Structure:
 
 ```json
+// admins collection
 {
-  "admins": [
-    {
-      "id": 1,
-      "username": "female_admin",
-      "password": "admin123",
-      "role": "female_admin",
-      "name": "Female Admin"
-    },
-    ...
-  ],
-  "workers": [
-    {
-      "id": 1,
-      "name": "Ahmed",
-      "role": "Plumber",
-      "phone": "+92-300-1234567"
-    },
-    ...
-  ],
-  "requests": [
-    {
-      "id": "REQ-2603-1234",
-      "department": "Boys Hostel",
-      "requestType": "Plumbing",
-      "description": "Water leakage",
-      "priority": "High",
-      "status": "Pending",
-      "assignedWorker": null,
-      "photo": null,
-      "submittedAt": "2026-03-07T...",
-      "verifiedAt": null,
-      "assignedAt": null,
-      "completedAt": null
-    },
-    ...
-  ]
+  "id": 1,
+  "username": "female_admin",
+  "password": "admin123",
+  "role": "female_admin",
+  "name": "Female Admin"
+}
+
+// workers collection
+{
+  "id": 1,
+  "name": "Ahmed",
+  "role": "Plumber",
+  "phone": "+92-300-1234567"
+}
+
+// requests collection
+{
+  "id": "REQ-2603-1234",
+  "department": "Boys Hostel",
+  "requestType": "Plumbing",
+  "description": "Water leakage",
+  "priority": "High",
+  "status": "Pending",
+  "assignedWorker": null,
+  "photo": null,
+  "submittedAt": "2026-03-07T...",
+  "verifiedAt": null,
+  "assignedAt": null,
+  "completedAt": null,
+  "verifiedBy": null,
+  "assignedBy": null,
+  "completedBy": null
 }
 ```
+
+**Note**: The system includes a `database.json` file for reference, but the live system uses MongoDB Atlas.
 
 ---
 
@@ -378,14 +403,13 @@ The `database.json` file contains:
 
 This is a **prototype**, not a production system. Limitations include:
 
-1. **Simple JSON database** - Not suitable for large-scale use
-2. **Basic authentication** - Passwords stored in plain text
+1. **File uploads on Vercel** - Photos stored temporarily (serverless limitation)
+2. **Basic authentication** - Passwords stored in plain text (MongoDB)
 3. **No password reset** - Fixed credentials
 4. **No email notifications** - Manual communication only
-5. **No backup system** - Single database file
-6. **No user management** - Can't add/remove admins
-7. **Manual WhatsApp** - No API integration
-8. **Single server** - No load balancing
+5. **No user management** - Can't add/remove admins via UI
+6. **Manual WhatsApp** - No API integration
+7. **Session storage** - May not persist across serverless regions
 
 ---
 
@@ -393,16 +417,16 @@ This is a **prototype**, not a production system. Limitations include:
 
 For a production system, consider:
 
-1. **Database**: PostgreSQL or MongoDB
-2. **Authentication**: bcrypt password hashing, JWT tokens
+1. **Authentication**: bcrypt password hashing, JWT tokens, OAuth
+2. **File Storage**: Cloud storage (Cloudinary, AWS S3, Vercel Blob)
 3. **Notifications**: Email and SMS alerts
-4. **File Storage**: Cloud storage (AWS S3, Cloudinary)
-5. **Reporting**: PDF generation, Excel exports
-6. **Mobile App**: React Native or Flutter
-7. **WhatsApp API**: Automated message sending
-8. **User Management**: Add/edit users, departments, workers
-9. **Advanced Analytics**: Charts, graphs, trends
-10. **Multi-language**: Urdu and English support
+4. **Reporting**: PDF generation, advanced Excel exports
+5. **Mobile App**: React Native or Flutter
+6. **WhatsApp API**: Automated message sending (WhatsApp Business API)
+7. **User Management**: Add/edit users, departments, workers via UI
+8. **Advanced Analytics**: Charts, graphs, trends, performance metrics
+9. **Multi-language**: Urdu and English support
+10. **Session Management**: Redis or MongoDB sessions for better persistence
 
 ---
 
@@ -428,6 +452,27 @@ If you get "Port 3000 already in use" error:
 - Check `uploads/` folder exists
 - Verify file size is reasonable (<10MB)
 - Check file is an image format
+
+---
+
+## 🌐 Deployment to Production
+
+This system is now configured to work with **MongoDB Atlas** and can be deployed to **Vercel** for free!
+
+### Quick Deployment Steps:
+1. Set up MongoDB Atlas (free tier)
+2. Configure environment variables
+3. Seed your database
+4. Deploy to Vercel
+
+📚 **See [DEPLOYMENT.md](DEPLOYMENT.md) for complete step-by-step deployment instructions**
+
+### What You Need:
+- MongoDB Atlas account (database hosting)
+- Vercel account (app hosting)
+- GitHub repository (already set up!)
+
+Both services offer generous free tiers perfect for this prototype.
 
 ---
 

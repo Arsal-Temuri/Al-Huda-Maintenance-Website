@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
@@ -5,12 +6,10 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
+const { connectToDatabase, getDatabase } = require('./db');
 
 const app = express();
-const PORT = 3000;
-
-// Database file path
-const DB_FILE = path.join(__dirname, 'database.json');
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(bodyParser.json());
@@ -39,28 +38,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Helper function to read database
-function readDatabase() {
-  try {
-    const data = fs.readFileSync(DB_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading database:', error);
-    return { admins: [], workers: [], requests: [] };
-  }
-}
-
-// Helper function to write database
-function writeDatabase(data) {
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Error writing database:', error);
-    return false;
-  }
-}
-
 // Generate unique request ID
 function generateRequestId() {
   const date = new Date();
@@ -82,7 +59,7 @@ function isAuthenticated(req, res, next) {
 // ==================== ROUTES ====================
 
 // Submit new request (public endpoint)
-app.post('/api/requests', upload.single('photo'), (req, res) => {
+app.post('/api/requests', upload.single('photo'), async (req, res) => {
   try {
     const { department, requestType, description } = req.body;
     
@@ -90,7 +67,7 @@ app.post('/api/requests', upload.single('photo'), (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
-    const db = readDatabase();
+    const db = await getDatabase();
     const requestId = generateRequestId();
     
     const newRequest = {
@@ -111,17 +88,13 @@ app.post('/api/requests', upload.single('photo'), (req, res) => {
       completedBy: null
     };
 
-    db.requests.push(newRequest);
+    await db.collection('requests').insertOne(newRequest);
     
-    if (writeDatabase(db)) {
-      res.json({ 
-        success: true, 
-        requestId: requestId,
-        message: 'Request submitted successfully'
-      });
-    } else {
-      res.status(500).json({ error: 'Failed to save request' });
-    }
+    res.json({ 
+      success: true, 
+      requestId: requestId,
+      message: 'Request submitted successfully'
+    });
   } catch (error) {
     console.error('Error submitting request:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -129,7 +102,7 @@ app.post('/api/requests', upload.single('photo'), (req, res) => {
 });
 
 // Admin login
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     
@@ -137,8 +110,8 @@ app.post('/api/login', (req, res) => {
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    const db = readDatabase();
-    const admin = db.admins.find(a => a.username === username && a.password === password);
+    const db = await getDatabase();
+    const admin = await db.collection('admins').findOne({ username, password });
     
     if (admin) {
       req.session.admin = {
@@ -180,10 +153,11 @@ app.post('/api/logout', (req, res) => {
 });
 
 // Get all requests (protected)
-app.get('/api/requests', isAuthenticated, (req, res) => {
+app.get('/api/requests', isAuthenticated, async (req, res) => {
   try {
-    const db = readDatabase();
-    res.json({ requests: db.requests });
+    const db = await getDatabase();
+    const requests = await db.collection('requests').find({}).toArray();
+    res.json({ requests });
   } catch (error) {
     console.error('Error fetching requests:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -191,10 +165,11 @@ app.get('/api/requests', isAuthenticated, (req, res) => {
 });
 
 // Get workers list (protected)
-app.get('/api/workers', isAuthenticated, (req, res) => {
+app.get('/api/workers', isAuthenticated, async (req, res) => {
   try {
-    const db = readDatabase();
-    res.json({ workers: db.workers });
+    const db = await getDatabase();
+    const workers = await db.collection('workers').find({}).toArray();
+    res.json({ workers });
   } catch (error) {
     console.error('Error fetching workers:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -202,7 +177,7 @@ app.get('/api/workers', isAuthenticated, (req, res) => {
 });
 
 // Verify request (protected - female admin)
-app.post('/api/requests/:id/verify', isAuthenticated, (req, res) => {
+app.post('/api/requests/:id/verify', isAuthenticated, async (req, res) => {
   try {
     const { id } = req.params;
     const { priority } = req.body;
@@ -211,9 +186,9 @@ app.post('/api/requests/:id/verify', isAuthenticated, (req, res) => {
       return res.status(400).json({ error: 'Priority is required' });
     }
     
-    const db = readDatabase();
+    const db = await getDatabase();
+    const request = await db.collection('requests').findOne({ id });
     
-    const request = db.requests.find(r => r.id === id);
     if (!request) {
       return res.status(404).json({ error: 'Request not found' });
     }
@@ -222,16 +197,20 @@ app.post('/api/requests/:id/verify', isAuthenticated, (req, res) => {
       return res.status(400).json({ error: 'Request already verified' });
     }
 
-    request.status = 'Verified';
-    request.priority = priority;
-    request.verifiedAt = new Date().toISOString();
-    request.verifiedBy = req.session.admin.name;
+    const updatedRequest = await db.collection('requests').findOneAndUpdate(
+      { id },
+      { 
+        $set: {
+          status: 'Verified',
+          priority,
+          verifiedAt: new Date().toISOString(),
+          verifiedBy: req.session.admin.name
+        }
+      },
+      { returnDocument: 'after' }
+    );
     
-    if (writeDatabase(db)) {
-      res.json({ success: true, request });
-    } else {
-      res.status(500).json({ error: 'Failed to update request' });
-    }
+    res.json({ success: true, request: updatedRequest.value });
   } catch (error) {
     console.error('Error verifying request:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -239,33 +218,37 @@ app.post('/api/requests/:id/verify', isAuthenticated, (req, res) => {
 });
 
 // Assign worker (protected - male admin)
-app.post('/api/requests/:id/assign', isAuthenticated, (req, res) => {
+app.post('/api/requests/:id/assign', isAuthenticated, async (req, res) => {
   try {
     const { id } = req.params;
     const { workerId } = req.body;
     
-    const db = readDatabase();
+    const db = await getDatabase();
+    const request = await db.collection('requests').findOne({ id });
     
-    const request = db.requests.find(r => r.id === id);
     if (!request) {
       return res.status(404).json({ error: 'Request not found' });
     }
 
-    const worker = db.workers.find(w => w.id === parseInt(workerId));
+    const worker = await db.collection('workers').findOne({ id: parseInt(workerId) });
     if (!worker) {
       return res.status(404).json({ error: 'Worker not found' });
     }
 
-    request.status = 'Assigned';
-    request.assignedWorker = worker;
-    request.assignedAt = new Date().toISOString();
-    request.assignedBy = req.session.admin.name;
+    const updatedRequest = await db.collection('requests').findOneAndUpdate(
+      { id },
+      { 
+        $set: {
+          status: 'Assigned',
+          assignedWorker: worker,
+          assignedAt: new Date().toISOString(),
+          assignedBy: req.session.admin.name
+        }
+      },
+      { returnDocument: 'after' }
+    );
     
-    if (writeDatabase(db)) {
-      res.json({ success: true, request, worker });
-    } else {
-      res.status(500).json({ error: 'Failed to assign worker' });
-    }
+    res.json({ success: true, request: updatedRequest.value, worker });
   } catch (error) {
     console.error('Error assigning worker:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -273,12 +256,12 @@ app.post('/api/requests/:id/assign', isAuthenticated, (req, res) => {
 });
 
 // Mark request as completed (protected - male admin)
-app.post('/api/requests/:id/complete', isAuthenticated, (req, res) => {
+app.post('/api/requests/:id/complete', isAuthenticated, async (req, res) => {
   try {
     const { id } = req.params;
-    const db = readDatabase();
+    const db = await getDatabase();
+    const request = await db.collection('requests').findOne({ id });
     
-    const request = db.requests.find(r => r.id === id);
     if (!request) {
       return res.status(404).json({ error: 'Request not found' });
     }
@@ -287,15 +270,19 @@ app.post('/api/requests/:id/complete', isAuthenticated, (req, res) => {
       return res.status(400).json({ error: 'Request must be assigned before completion' });
     }
 
-    request.status = 'Completed';
-    request.completedAt = new Date().toISOString();
-    request.completedBy = req.session.admin.name;
+    const updatedRequest = await db.collection('requests').findOneAndUpdate(
+      { id },
+      { 
+        $set: {
+          status: 'Completed',
+          completedAt: new Date().toISOString(),
+          completedBy: req.session.admin.name
+        }
+      },
+      { returnDocument: 'after' }
+    );
     
-    if (writeDatabase(db)) {
-      res.json({ success: true, request });
-    } else {
-      res.status(500).json({ error: 'Failed to complete request' });
-    }
+    res.json({ success: true, request: updatedRequest.value });
   } catch (error) {
     console.error('Error completing request:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -303,7 +290,7 @@ app.post('/api/requests/:id/complete', isAuthenticated, (req, res) => {
 });
 
 // Update request status (protected)
-app.patch('/api/requests/:id/status', isAuthenticated, (req, res) => {
+app.patch('/api/requests/:id/status', isAuthenticated, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -313,20 +300,20 @@ app.patch('/api/requests/:id/status', isAuthenticated, (req, res) => {
       return res.status(400).json({ error: 'Invalid status' });
     }
 
-    const db = readDatabase();
-    const request = db.requests.find(r => r.id === id);
+    const db = await getDatabase();
+    const request = await db.collection('requests').findOne({ id });
     
     if (!request) {
       return res.status(404).json({ error: 'Request not found' });
     }
 
-    request.status = status;
+    const updatedRequest = await db.collection('requests').findOneAndUpdate(
+      { id },
+      { $set: { status } },
+      { returnDocument: 'after' }
+    );
     
-    if (writeDatabase(db)) {
-      res.json({ success: true, request });
-    } else {
-      res.status(500).json({ error: 'Failed to update status' });
-    }
+    res.json({ success: true, request: updatedRequest.value });
   } catch (error) {
     console.error('Error updating status:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -334,19 +321,21 @@ app.patch('/api/requests/:id/status', isAuthenticated, (req, res) => {
 });
 
 // Export requests to Excel (protected)
-app.get('/api/export/requests', isAuthenticated, (req, res) => {
+app.get('/api/export/requests', isAuthenticated, async (req, res) => {
   try {
     console.log('Export endpoint called by:', req.session.user);
     console.log('Export filter:', req.query.status);
     
-    const db = readDatabase();
+    const db = await getDatabase();
     const { status } = req.query;
     
     // Filter requests based on status if provided
-    let requests = db.requests;
+    let query = {};
     if (status && status !== 'all') {
-      requests = requests.filter(r => r.status === status);
+      query.status = status;
     }
+    
+    const requests = await db.collection('requests').find(query).toArray();
     
     console.log(`Found ${requests.length} requests to export`);
     
@@ -419,16 +408,28 @@ app.get('/api/export/requests', isAuthenticated, (req, res) => {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Start server
-app.listen(PORT, () => {
-  console.log('='.repeat(60));
-  console.log('  Al Huda Maintenance System - Server Started');
-  console.log('='.repeat(60));
-  console.log(`  Server running at: http://localhost:${PORT}`);
-  console.log(`  Request Form: http://localhost:${PORT}`);
-  console.log(`  Admin Login: http://localhost:${PORT}/login.html`);
-  console.log('='.repeat(60));
-  console.log('  Default Admin Credentials:');
-  console.log('  Female Admin: female_admin / admin123');
-  console.log('  Male Admin: male_admin / admin123');
-  console.log('='.repeat(60));
-});
+async function startServer() {
+  try {
+    // Connect to MongoDB first
+    await connectToDatabase();
+    
+    app.listen(PORT, () => {
+      console.log('='.repeat(60));
+      console.log('  Al Huda Maintenance System - Server Started');
+      console.log('='.repeat(60));
+      console.log(`  Server running at: http://localhost:${PORT}`);
+      console.log(`  Request Form: http://localhost:${PORT}`);
+      console.log(`  Admin Login: http://localhost:${PORT}/login.html`);
+      console.log('='.repeat(60));
+      console.log('  Default Admin Credentials:');
+      console.log('  Female Admin: female_admin / admin123');
+      console.log('  Male Admin: male_admin / admin123');
+      console.log('='.repeat(60));
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();

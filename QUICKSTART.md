@@ -1,19 +1,36 @@
 # 🚀 Quick Start Guide
 
-## Al Huda Maintenance System - Get Running in 3 Minutes!
+## Al Huda Maintenance System - Get Running in 5 Minutes!
 
-### Step 1: Install Dependencies (First Time Only)
+### Prerequisites
+- Node.js installed
+- MongoDB Atlas account (free) - [Sign up here](https://www.mongodb.com/cloud/atlas)
+
+---
+
+## Step 1: Install Dependencies (First Time Only)
 Open PowerShell or Command Prompt in this folder and run:
 ```powershell
 npm install
 ```
 
-### Step 2: Start the Server
+## Step 2: Configure MongoDB
+1. Create MongoDB Atlas cluster (see [DEPLOYMENT.md](DEPLOYMENT.md))
+2. Get your connection string
+3. Copy `.env.example` to `.env`
+4. Update `MONGODB_URI` in `.env` with your connection string
+
+## Step 3: Seed Database
+```powershell
+npm run seed
+```
+
+## Step 4: Start the Server
 ```powershell
 npm start
 ```
 
-### Step 3: Open in Browser
+## Step 5: Open in Browser
 - **Request Form**: http://localhost:3000
 - **Admin Dashboard**: http://localhost:3000/login.html
 
