@@ -79,7 +79,7 @@ function displayHistory(requests) {
   const tbody = document.getElementById('historyTableBody');
   
   if (requests.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No completed tasks yet</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="empty-state">No completed tasks yet</td></tr>';
     return;
   }
   
@@ -94,6 +94,9 @@ function displayHistory(requests) {
     
     return `
       <tr>
+        <td style="text-align: center;">
+          <input type="checkbox" class="request-checkbox" value="${request.id}" onchange="toggleSelection()">
+        </td>
         <td data-label="Request ID"><strong>${request.id}</strong></td>
         <td data-label="Department">${request.department}</td>
         <td data-label="Type">${request.requestType}</td>
@@ -111,6 +114,11 @@ function displayHistory(requests) {
       </tr>
     `;
   }).join('');
+  
+  // Reset select all checkbox and delete button state
+  const selectAllCb = document.getElementById('selectAllCheckbox');
+  if (selectAllCb) selectAllCb.checked = false;
+  if (typeof toggleSelection === 'function') toggleSelection();
 }
 
 function showDetails(requestId) {
@@ -279,4 +287,92 @@ async function exportToExcel() {
 function showAlert(message, type) {
   // Simple alert for history page
   alert(message);
+}
+
+// Selection and Deletion Logic
+function toggleSelectAll() {
+  const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+  const checkboxes = document.querySelectorAll('.request-checkbox');
+  
+  checkboxes.forEach(checkbox => {
+    checkbox.checked = selectAllCheckbox.checked;
+  });
+  
+  toggleSelection();
+}
+
+function toggleSelection() {
+  const checkboxes = document.querySelectorAll('.request-checkbox');
+  const deleteBtn = document.getElementById('deleteSelectedBtn');
+  const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+  
+  let checkedCount = 0;
+  checkboxes.forEach(checkbox => {
+    if (checkbox.checked) checkedCount++;
+  });
+  
+  if (deleteBtn) {
+    if (checkedCount > 0) {
+      deleteBtn.style.display = 'inline-block';
+      deleteBtn.textContent = 'Delete Selected (' + checkedCount + ')';
+    } else {
+      deleteBtn.style.display = 'none';
+    }
+  }
+  
+  if (selectAllCheckbox && checkboxes.length > 0) {
+    selectAllCheckbox.checked = checkedCount === checkboxes.length;
+  }
+}
+
+async function deleteSelectedRequests() {
+  const checkboxes = document.querySelectorAll('.request-checkbox:checked');
+  const idsToDelete = Array.from(checkboxes).map(cb => cb.value);
+  
+  if (idsToDelete.length === 0) return;
+  
+  if (!confirm('Are you sure you want to permanently delete ' + idsToDelete.length + ' selected entries?')) {
+    return;
+  }
+  
+  try {
+    const response = await fetch('/api/requests/delete-multiple', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ ids: idsToDelete })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // Remove from local array
+      completedRequests = completedRequests.filter(r => !idsToDelete.includes(r.id));
+      
+      // Update UI
+      if (typeof showAlert === 'function') {
+        showAlert('Successfully deleted ' + data.deletedCount + ' request(s)', 'success');
+      } else {
+        alert('Successfully deleted ' + data.deletedCount + ' request(s)');
+      }
+      
+      // Update stats and re-filter
+      updateStats(completedRequests);
+      displayHistory(completedRequests);
+    } else {
+      if (typeof showAlert === 'function') {
+        showAlert(data.error || 'Failed to delete requests', 'error');
+      } else {
+        alert(data.error || 'Failed to delete requests');
+      }
+    }
+  } catch (error) {
+    console.error('Delete error:', error);
+    if (typeof showAlert === 'function') {
+      showAlert('An error occurred while deleting requests', 'error');
+    } else {
+      alert('An error occurred while deleting requests');
+    }
+  }
 }

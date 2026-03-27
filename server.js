@@ -404,6 +404,37 @@ app.get('/api/export/requests', isAuthenticated, async (req, res) => {
   }
 });
 
+// Delete multiple requests (protected)
+app.delete('/api/requests/delete-multiple', isAuthenticated, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'No request IDs provided' });
+    }
+
+    const db = await getDatabase();
+    
+    // Delete the requests with the matching IDs
+    const result = await db.collection('requests').deleteMany({
+      id: { $in: ids }
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'No requests matched the provided IDs' });
+    }
+
+    res.json({ 
+      success: true, 
+      message: `Successfully deleted ${result.deletedCount} request(s)`,
+      deletedCount: result.deletedCount 
+    });
+  } catch (error) {
+    console.error('Error deleting requests:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
