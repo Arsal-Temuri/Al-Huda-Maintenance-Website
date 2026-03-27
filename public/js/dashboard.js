@@ -96,8 +96,10 @@ function filterRequests(status) {
   // Update button active state
   document.querySelectorAll('#filterTabs .btn').forEach(btn => {
     btn.classList.remove('active');
+    if (btn.getAttribute('data-filter') === status) {
+      btn.classList.add('active');
+    }
   });
-  event.target.classList.add('active');
   
   if (status === 'all') {
     displayRequests(allRequests);
@@ -112,6 +114,9 @@ function displayRequests(requests) {
   
   if (requests.length === 0) {
     tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No requests found</td></tr>';
+    // Reset select all checkbox and delete button state if empty
+    document.getElementById('selectAllCheckbox').checked = false;
+    toggleSelection();
     return;
   }
   

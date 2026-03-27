@@ -80,6 +80,9 @@ function displayHistory(requests) {
   
   if (requests.length === 0) {
     tbody.innerHTML = '<tr><td colspan="11" class="empty-state">No completed tasks yet</td></tr>';
+    const selectAllCb = document.getElementById('selectAllCheckbox');
+    if (selectAllCb) selectAllCb.checked = false;
+    if (typeof toggleSelection === 'function') toggleSelection();
     return;
   }
   
