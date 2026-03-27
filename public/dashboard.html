@@ -101,7 +101,7 @@
         <input type="hidden" id="assignRequestId">
         <div class="form-group">
           <label>Request Details:</label>
-          <div id="assignRequestDetails" style="padding: 15px; background: rgba(153, 41, 234, 0.1); border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(153, 41, 234, 0.3); backdrop-filter: blur(10px); color: rgba(255, 255, 255, 0.9);"></div>
+          <div id="assignRequestDetails" class="neo-panel" style="padding: 15px; margin-bottom: 20px;"></div>
         </div>
         <div class="form-group">
           <label for="workerId">Select Worker *</label>
@@ -127,7 +127,7 @@
         <input type="hidden" id="verifyRequestId">
         <div class="form-group">
           <label>Request Details:</label>
-          <div id="verifyRequestDetails" style="padding: 15px; background: rgba(153, 41, 234, 0.1); border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(153, 41, 234, 0.3); backdrop-filter: blur(10px); color: rgba(255, 255, 255, 0.9);"></div>
+          <div id="verifyRequestDetails" class="neo-panel" style="padding: 15px; margin-bottom: 20px;"></div>
         </div>
         <div class="form-group">
           <label for="verifyPriority">Set Priority *</label>
@@ -153,10 +153,10 @@
       <div class="modal-header">
         <h2>Worker Assigned Successfully</h2>
       </div>
-      <div style="padding: 20px; background: rgba(153, 41, 234, 0.1); border-radius: 8px; border: 1px solid rgba(153, 41, 234, 0.3); backdrop-filter: blur(10px);">
-        <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 15px; font-weight: 600;">Send this message to the worker via WhatsApp:</p>
-        <div id="whatsappMessage" style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 8px; border-left: 4px solid #9929EA; font-family: monospace; font-size: 0.9em; white-space: pre-wrap; color: rgba(255, 255, 255, 0.9);"></div>
-        <p style="color: rgba(255, 255, 255, 0.7); margin-top: 15px; font-size: 0.9em;">
+      <div class="neo-panel" style="padding: 20px;">
+        <p style="color: #000; font-weight: 800; margin-bottom: 15px;">Send this message to the worker via WhatsApp:</p>
+        <div id="whatsappMessage" style="background: #fff; padding: 15px; border: 3px solid #000; box-shadow: 4px 4px 0px #000; border-radius: 8px; font-family: monospace; font-size: 0.9em; white-space: pre-wrap; color: #000;"></div>
+        <p style="color: #000; margin-top: 15px; font-size: 0.9em; font-weight: bold;">
           <strong>Worker Phone:</strong> <span id="workerPhone"></span>
         </p>
       </div>
