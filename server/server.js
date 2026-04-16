@@ -8,7 +8,10 @@ const { connectToDatabase } = require('./config/db');
 
 const app = express();
 
-connectToDatabase();
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/alhuda-maintenance';
+
+// Connect to MongoDB safely
+connectToDatabase().catch(err => console.error("MongoDB Connection Error on Startup: ", err));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -25,10 +28,15 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-        mongoUrl: process.env.MONGODB_URI
+        mongoUrl: MONGODB_URI
     }),
     cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
 }));
+
+// Quick health check route for Vercel
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', message: 'Backend is running on Vercel Serverless!', hasMongoURI: !!process.env.MONGODB_URI });
+});
 
 const authRoutes = require('./routes/authRoutes');
 const requestRoutes = require('./routes/requestRoutes');
