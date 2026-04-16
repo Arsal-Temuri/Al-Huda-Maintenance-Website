@@ -1,20 +1,9 @@
 const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '..', 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir);
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
-    cb(null, uniqueName);
-  }
-});
+// Change from diskStorage to memoryStorage for SERVERLESS compatibility
+// Vercel does not allow writing files to the disk persistently.
+// For production, you will need to upload this buffer to AWS S3 or Cloudinary.
+const storage = multer.memoryStorage();
 
 const upload = multer({ storage: storage });
 
