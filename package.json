@@ -2,7 +2,6 @@
   "name": "al-huda-maintenance-system",
   "version": "1.0.0",
   "description": "Digital maintenance request management system prototype",
-  "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
     "server": "node server/server.js",
